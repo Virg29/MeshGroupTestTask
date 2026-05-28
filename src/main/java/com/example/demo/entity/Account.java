@@ -22,4 +22,7 @@ public class Account {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
+
+    @Column(name = "target_balance_stockpiling", nullable = false, precision = 19, scale = 2)
+    private BigDecimal targetBalanceStockpiling;
 }
