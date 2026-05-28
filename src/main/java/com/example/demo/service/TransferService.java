@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.entity.Account;
 import com.example.demo.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ public class TransferService {
 
     private final AccountRepository accountRepository;
 
+    @CacheEvict(value = "users-search", allEntries = true)
     @Transactional
     public void transfer(Long donorUserId, Long recipientUserId, BigDecimal amount) {
         if (donorUserId.equals(recipientUserId)) {

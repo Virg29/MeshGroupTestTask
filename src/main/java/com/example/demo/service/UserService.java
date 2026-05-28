@@ -10,6 +10,8 @@ import com.example.demo.repository.PhoneDataRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.UserSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,7 @@ public class UserService {
     private final EmailDataRepository emailDataRepository;
     private final PhoneDataRepository phoneDataRepository;
 
+    @CacheEvict(value = "users-search", allEntries = true)
     @Transactional
     public void addEmail(Long userId, String email) {
         if (emailDataRepository.existsByEmail(email)) {
@@ -40,6 +43,7 @@ public class UserService {
         emailDataRepository.save(emailData);
     }
 
+    @CacheEvict(value = "users-search", allEntries = true)
     @Transactional
     public void addPhone(Long userId, String phone) {
         if (phoneDataRepository.existsByPhone(phone)) {
@@ -60,6 +64,7 @@ public class UserService {
         return toResponse(user);
     }
 
+    @CacheEvict(value = "users-search", allEntries = true)
     @Transactional
     public void deleteEmail(Long userId, Long emailId) {
         EmailData emailData = emailDataRepository.findById(emailId)
@@ -70,6 +75,7 @@ public class UserService {
         emailDataRepository.delete(emailData);
     }
 
+    @CacheEvict(value = "users-search", allEntries = true)
     @Transactional
     public void deletePhone(Long userId, Long phoneId) {
         PhoneData phoneData = phoneDataRepository.findById(phoneId)
@@ -80,6 +86,7 @@ public class UserService {
         phoneDataRepository.delete(phoneData);
     }
 
+    @Cacheable(value = "users-search", key = "{#name, #dateOfBirth, #email, #phone, #pageable.pageNumber, #pageable.pageSize}")
     @Transactional(readOnly = true)
     public UserPageResponse searchUsers(String name, LocalDate dateOfBirth, String email, String phone, Pageable pageable) {
         Specification<User> spec = (root, query, cb) -> cb.conjunction();

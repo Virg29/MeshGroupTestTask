@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ public class BalanceAccrualScheduler {
     private final AccountRepository accountRepository;
     private final BalanceAccrualService balanceAccrualService;
 
+    @CacheEvict(value = "users-search", allEntries = true)
     @Scheduled(fixedDelay = 30_000)
     public void accrueBalances() {
         var ids = accountRepository.findIdsWithBalanceBelowTarget();
