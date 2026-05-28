@@ -15,6 +15,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a.id FROM Account a WHERE a.balance < a.targetBalanceStockpiling")
     List<Long> findIdsWithBalanceBelowTarget();
 
+    Optional<Account> findByUserId(Long userId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Account a WHERE a.id = :id")
     Optional<Account> findByIdWithLock(@Param("id") Long id);

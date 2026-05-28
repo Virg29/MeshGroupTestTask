@@ -2,8 +2,10 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.AddEmailRequest;
 import com.example.demo.dto.AddPhoneRequest;
+import com.example.demo.dto.TransferRequest;
 import com.example.demo.dto.UserPageResponse;
 import com.example.demo.dto.UserResponse;
+import com.example.demo.service.TransferService;
 import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.time.LocalDate;
 public class UserController {
 
     private final UserService userService;
+    private final TransferService transferService;
 
     @GetMapping("/search")
     public UserPageResponse search(
@@ -51,6 +54,13 @@ public class UserController {
     public void addPhone(@RequestBody @Valid AddPhoneRequest request,
                          Authentication authentication) {
         userService.addPhone((Long) authentication.getPrincipal(), request.getPhone());
+    }
+
+    @PostMapping("/transfer")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void transfer(@RequestBody @Valid TransferRequest request,
+                         Authentication authentication) {
+        transferService.transfer((Long) authentication.getPrincipal(), request.getRecipientUserId(), request.getAmount());
     }
 
     @DeleteMapping("/email/{id}")
