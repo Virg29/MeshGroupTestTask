@@ -2,13 +2,19 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.AddEmailRequest;
 import com.example.demo.dto.AddPhoneRequest;
+import com.example.demo.dto.UserPageResponse;
 import com.example.demo.dto.UserResponse;
 import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/user")
@@ -16,6 +22,17 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/search")
+    public UserPageResponse search(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd.MM.yyyy") LocalDate dateOfBirth,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phone,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return userService.searchUsers(name, dateOfBirth, email, phone, PageRequest.of(page, size, Sort.by("id")));
+    }
 
     @GetMapping("/me")
     public UserResponse getMe(Authentication authentication) {

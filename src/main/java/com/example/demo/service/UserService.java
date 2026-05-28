@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.UserPageResponse;
 import com.example.demo.dto.UserResponse;
 import com.example.demo.entity.EmailData;
 import com.example.demo.entity.PhoneData;
@@ -7,12 +8,16 @@ import com.example.demo.entity.User;
 import com.example.demo.repository.EmailDataRepository;
 import com.example.demo.repository.PhoneDataRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.UserSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,15 +57,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setName(user.getName());
-        response.setDateOfBirth(user.getDateOfBirth());
-        response.setBalance(user.getAccount() != null ? user.getAccount().getBalance() : null);
-        response.setEmails(user.getEmails().stream().map(EmailData::getEmail).collect(Collectors.toList()));
-        response.setPhones(user.getPhones().stream().map(PhoneData::getPhone).collect(Collectors.toList()));
-
-        return response;
+        return toResponse(user);
     }
 
     @Transactional
@@ -81,6 +78,28 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
         phoneDataRepository.delete(phoneData);
+    }
+
+    @Transactional(readOnly = true)
+    public UserPageResponse searchUsers(String name, LocalDate dateOfBirth, String email, String phone, Pageable pageable) {
+        Specification<User> spec = (root, query, cb) -> cb.conjunction();
+        if (name != null)        spec = spec.and(UserSpecification.hasNameLike(name));
+        if (dateOfBirth != null) spec = spec.and(UserSpecification.hasDateOfBirthAfter(dateOfBirth));
+        if (email != null)       spec = spec.and(UserSpecification.hasEmail(email));
+        if (phone != null)       spec = spec.and(UserSpecification.hasPhone(phone));
+
+        return UserPageResponse.of(userRepository.findAll(spec, pageable).map(this::toResponse));
+    }
+
+    private UserResponse toResponse(User user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setName(user.getName());
+        response.setDateOfBirth(user.getDateOfBirth());
+        response.setBalance(user.getAccount() != null ? user.getAccount().getBalance() : null);
+        response.setEmails(user.getEmails().stream().map(EmailData::getEmail).collect(Collectors.toList()));
+        response.setPhones(user.getPhones().stream().map(PhoneData::getPhone).collect(Collectors.toList()));
+        return response;
     }
 
     private User fetchUser(Long userId) {
