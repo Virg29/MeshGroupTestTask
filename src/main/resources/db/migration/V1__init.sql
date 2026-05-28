@@ -14,14 +14,14 @@ CREATE TABLE account (
 
 CREATE TABLE email_data (
     id      BIGSERIAL    PRIMARY KEY,
-    user_id BIGINT       NOT NULL,
+    user_id BIGINT       NOT NULL UNIQUE,
     email   VARCHAR(200) NOT NULL UNIQUE,
     CONSTRAINT fk_email_data_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
 CREATE TABLE phone_data (
     id      BIGSERIAL   PRIMARY KEY,
-    user_id BIGINT      NOT NULL,
+    user_id BIGINT      NOT NULL UNIQUE,
     phone   VARCHAR(13) NOT NULL UNIQUE,
     CONSTRAINT fk_phone_data_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
