@@ -1,4 +1,4 @@
-# Parcel Service API
+# Exchange service demo
 
 REST-сервис на Spring Boot 4 / Java 17.
 
